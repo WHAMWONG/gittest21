@@ -1,4 +1,9 @@
 class Api::TodosController < ApplicationController
+  require_dependency 'app/models/todo'
+  require_dependency 'app/models/attachment'
+  require_dependency 'app/services/todo_service/attach_files'
+  require_dependency 'app/policies/application_policy'
+
   before_action :doorkeeper_authorize!
 
   def create
@@ -11,6 +16,37 @@ class Api::TodosController < ApplicationController
     else
       handle_errors(result[:error])
     end
+  end
+
+  def attach_files
+    todo_id = params[:todo_id]
+    file_path = params[:file_path]
+
+    return render json: { error: "File path is required." }, status: :bad_request if file_path.blank?
+
+    todo = Todo.find_by(id: todo_id)
+    return render json: { error: "Todo item not found." }, status: :not_found unless todo
+
+    authorize todo, policy_class: ApplicationPolicy
+
+    result = TodoService::AttachFiles.new(todo_id: todo_id, attachment_paths: [file_path]).call
+
+    if result[:error]
+      render json: { error: result[:error] }, status: :unprocessable_entity
+    else
+      attachment = result[:attached_files].first
+      render json: {
+        status: 201,
+        attachment: {
+          id: attachment['id'],
+          todo_id: attachment['todo_id'],
+          file_path: attachment['file_path'],
+          created_at: attachment['created_at'].iso8601
+        }
+      }, status: :created
+    end
+  rescue Pundit::NotAuthorizedError
+    render json: { error: "User does not have permission to access the specified todo item." }, status: :forbidden
   end
 
   private
@@ -36,4 +72,6 @@ class Api::TodosController < ApplicationController
       render json: { error: error_message }, status: :unprocessable_entity
     end
   end
+
+  # ... other actions in the controller ...
 end
