@@ -1,4 +1,3 @@
-
 # PostgreSQL. Versions 9.3 and up are supported.
 #
 # Install the pg driver:
@@ -20,21 +19,21 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  host: <%= ENV['DATABASE_HOST'] %>
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV['DATABASE_USER'] %>
-  port: <%= ENV['DATABASE_PORT'] %>
-  password: <%= ENV['DATABASE_PASSWORD'] %>
+  host: <%= ENV.fetch("DATABASE_HOST", '172.20.107.21') %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5).to_i %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", 'your_default_username') %>
+  port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
+  password: <%= ENV['DATABASE_PASSWORD'] %> # Replace with the correct password
 
 development:
   <<: *default
-  database: <%= ENV['DATABASE_NAME'] %>
-  password: <%= ENV['DATABASE_PASSWORD'] %>
+  database: <%= ENV.fetch("DATABASE_NAME", 'preview-4675') %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", 'your_default_password') %>
 
-  # The specified database role being used to connect to postgres.
+  # The specified database role being used to connect to postgres. Ensure the user has proper permissions.
   # To create additional roles in postgres see `$ createuser --help`.
   # When left blank, postgres will use the default role. This is
-  # the same name as the operating system user that initialized the database.
+  # the same name as the operating system user that initialized the database. Ensure the user has proper permissions.
 
   # The password associated with the postgres role (username).
   #password:
@@ -47,7 +46,7 @@ development:
   # The TCP port the server listens on. Defaults to 5432.
   # If your server runs on a different port number, change accordingly.
 
-  # Schema search path. The server defaults to $user,public
+  # Schema search path. The server defaults to $user,public. Ensure the search path is correctly set.
   #schema_search_path: myapp,sharedapp,public
 
   # Minimum log levels, in increasing order:
@@ -59,10 +58,10 @@ development:
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
-test:
+test: &test
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME") { "base_source_test" } %>
-  password: <%= ENV.fetch("BASE_SOURCE_PASSWORD") { "postgres" } %>
+  database: <%= ENV.fetch("DATABASE_NAME", "base_source_test") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "postgres") %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -85,12 +84,12 @@ test:
 #
 production:
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME") { "base_source_production" } %>
-  username: <%= ENV.fetch("BASE_SOURCE_USERNAME") { "base_source" } %>
-  password: <%= ENV["BASE_SOURCE_PASSWORD"] %>
+  database: <%= ENV.fetch("DATABASE_NAME", "base_source_production") %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", 'your_production_username') %>
+  password: <%= ENV['DATABASE_PASSWORD'] %>
 
 staging:
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME") { "base_source_staging" } %>
-  username: <%= ENV.fetch("BASE_SOURCE_USERNAME") { "base_source" } %>
-  password: <%= ENV["BASE_SOURCE_PASSWORD"] %>
+  database: <%= ENV.fetch("DATABASE_NAME", "base_source_staging") %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", "your_staging_username") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "your_staging_password") %>
