@@ -9,7 +9,11 @@ class Todo < ApplicationRecord
   enum recurrence: %w[daily weekly monthly], _suffix: true
 
   # validations
+  validates :due_date, presence: true, timeliness: { type: :datetime, on_or_after: lambda { Time.current }, message: I18n.t('activerecord.errors.messages.datetime_in_future') }
   validates :title, uniqueness: { scope: :user_id, message: I18n.t('activerecord.errors.messages.taken') }
+
+  validate :validate_due_date_in_future
+
   # end for validations
 
   class << self
@@ -32,5 +36,11 @@ class Todo < ApplicationRecord
 
       attached_files
     end
+  end
+
+  private
+
+  def validate_due_date_in_future
+    errors.add(:due_date, I18n.t('activerecord.errors.messages.datetime_in_future')) if due_date.present? && due_date < Time.current
   end
 end
