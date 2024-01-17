@@ -8,11 +8,29 @@ class Todo < ApplicationRecord
   enum priority: %w[low medium high], _suffix: true
   enum recurrence: %w[daily weekly monthly], _suffix: true
 
-  validates :title, uniqueness: { scope: :user_id, message: I18n.t('activerecord.errors.messages.taken') }
   # validations
-
+  validates :title, uniqueness: { scope: :user_id, message: I18n.t('activerecord.errors.messages.taken') }
   # end for validations
 
   class << self
+    def attach_files(todo_id, attachment_paths)
+      todo = find(todo_id)
+      attached_files = []
+
+      attachment_paths.each do |file_path|
+        if File.exist?(file_path) && File.readable?(file_path)
+          attachment = todo.attachments.build(file_path: file_path)
+          if attachment.save
+            attached_files << attachment
+          else
+            return { error: "Failed to attach file: #{file_path}" }
+          end
+        else
+          return { error: "File does not exist or is not accessible: #{file_path}" }
+        end
+      end
+
+      attached_files
+    end
   end
 end
