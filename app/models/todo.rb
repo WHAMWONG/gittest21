@@ -8,7 +8,7 @@ class Todo < ApplicationRecord
   enum priority: %w[low medium high], _suffix: true
   enum recurrence: %w[daily weekly monthly], _suffix: true
 
-  # validations
+  # validations rule 
   validates :due_date, presence: true, timeliness: { type: :datetime, on_or_after: lambda { Time.current }, message: I18n.t('activerecord.errors.messages.datetime_in_future') }
   validates :title, uniqueness: { scope: :user_id, message: I18n.t('activerecord.errors.messages.taken') }
 
