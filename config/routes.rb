@@ -9,8 +9,8 @@ Rails.application.routes.draw do
   # ... other routes ...
 
   # New route from the new code
-  post '/api/todos/:todo_id/attachments', to: 'todos#attach_files'
+  post '/api/v1/todos/:todo_id/attachments', to: 'todos#attach_files'
 
   # Existing route from the existing code
-  post '/api/todos', to: 'todos#create'
+  post '/api/v1/todos', to: 'todos#create'
 end

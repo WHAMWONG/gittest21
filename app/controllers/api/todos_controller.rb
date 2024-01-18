@@ -1,5 +1,5 @@
 class Api::TodosController < ApplicationController
-  require_dependency 'app/models/todo'
+  # Removed require_dependency as Rails autoloads constants
   require_dependency 'app/models/attachment'
   require_dependency 'app/services/todo_service/attach_files'
   require_dependency 'app/policies/application_policy'
@@ -7,7 +7,7 @@ class Api::TodosController < ApplicationController
   before_action :doorkeeper_authorize!
 
   def create
-    todo_service = TodoService::Create.new(todo_params.merge(user_id: current_resource_owner.id))
+    todo_service = TodoService::Create.new(todo_params.merge(user_id: current_resource_owner.id)) # Use the service object for creation logic
 
     result = todo_service.execute
 
@@ -15,7 +15,7 @@ class Api::TodosController < ApplicationController
       render json: { status: 201, todo: result[:todo] }, status: :created
     else
       handle_errors(result[:error])
-    end
+    end # Handle success and error responses
   end
 
   def attach_files
@@ -54,7 +54,7 @@ class Api::TodosController < ApplicationController
   def todo_params
     params.require(:todo).permit(
       :title,
-      :description,
+      :description, # Permitting the required and optional parameters
       :due_date,
       :priority,
       :is_recurring,
@@ -62,7 +62,7 @@ class Api::TodosController < ApplicationController
       category_ids: [],
       tag_ids: []
     )
-  end
+  end # Strong parameters for todo creation
 
   def handle_errors(error_message)
     case error_message
@@ -71,7 +71,7 @@ class Api::TodosController < ApplicationController
     else
       render json: { error: error_message }, status: :unprocessable_entity
     end
-  end
+  end # Error handling based on the error message
 
   # ... other actions in the controller ...
 end
