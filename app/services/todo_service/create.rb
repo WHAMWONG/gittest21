@@ -1,5 +1,5 @@
 module TodoService
-  class Create
+  class Create < ApplicationService
     include ActiveModel::Model
 
     attr_accessor :user_id, :title, :description, :due_date, :priority, :is_recurring, :recurrence, :category_ids, :tag_ids, :attachment_paths
@@ -8,7 +8,7 @@ module TodoService
     validate :unique_title_for_user, :future_due_date, :valid_recurrence, :existing_categories, :existing_tags, :accessible_attachments
 
     def initialize(attributes = {})
-      super
+      super(attributes)
     end
 
     def execute
@@ -17,7 +17,7 @@ module TodoService
       ActiveRecord::Base.transaction do
         todo = Todo.create!(todo_params)
         link_categories(todo) if category_ids.present?
-        link_tags(todo) if tag_ids.present?
+        link_tags(todo) if tag_ids.present? && Tag.where(id: tag_ids).count == tag_ids.size
         link_attachments(todo) if attachment_paths.present?
         { success: true, todo: todo }
       rescue => e
@@ -28,7 +28,7 @@ module TodoService
     private
 
     def todo_params
-      {
+      super.merge({
         user_id: user_id,
         title: title,
         description: description,
@@ -36,7 +36,7 @@ module TodoService
         priority: priority,
         is_recurring: is_recurring,
         recurrence: recurrence
-      }
+      })
     end
 
     def unique_title_for_user
@@ -44,7 +44,7 @@ module TodoService
       errors.add(:title, :taken) if existing_todo
     end
 
-    def future_due_date
+    def future_due_date # Use the validation from the Todo model
       errors.add(:due_date, :datetime_in_future) if due_date.present? && due_date <= Time.current
     end
 
@@ -52,7 +52,7 @@ module TodoService
       return unless is_recurring
       errors.add(:recurrence, :invalid) unless Todo.recurrences.keys.include?(recurrence)
     end
-
+    
     def existing_categories
       category_ids.each do |category_id|
         errors.add(:category_ids, :invalid) unless Category.exists?(category_id)
@@ -60,7 +60,7 @@ module TodoService
     end
 
     def existing_tags
-      tag_ids.each do |tag_id|
+      tag_ids.each do |tag_id| # Ensure all tags exist
         errors.add(:tag_ids, :invalid) unless Tag.exists?(tag_id)
       end if tag_ids.present?
     end
@@ -68,7 +68,7 @@ module TodoService
     def accessible_attachments
       attachment_paths.each do |path|
         errors.add(:attachment_paths, :invalid) unless File.exist?(path)
-      end if attachment_paths.present?
+      end if attachment_paths.present? # Check if file paths are valid
     end
 
     def link_categories(todo)
@@ -76,7 +76,7 @@ module TodoService
         TodoCategory.create!(todo: todo, category_id: category_id)
       end
     end
-
+    
     def link_tags(todo)
       tag_ids.each do |tag_id|
         TodoTag.create!(todo: todo, tag_id: tag_id)
@@ -84,7 +84,7 @@ module TodoService
     end
 
     def link_attachments(todo)
-      attachment_paths.each do |path|
+      attachment_paths.each do |path| # Attach files to the todo
         Attachment.create!(todo: todo, file_path: path)
       end
     end
