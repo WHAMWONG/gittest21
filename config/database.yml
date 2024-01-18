@@ -20,18 +20,18 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  host: <%= ENV['DATABASE_HOST'] %>
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV['DATABASE_USER'] %>
-  port: <%= ENV['DATABASE_PORT'] %>
-  password: <%= ENV['DATABASE_PASSWORD'] %>
+  host: <%= ENV.fetch("DATABASE_HOST", '172.20.107.21') %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", 'your_default_username') %>
+  port: <%= ENV.fetch("DATABASE_PORT", 5432) %>
+  password: <%= ENV['DATABASE_PASSWORD'] %> # Replace with the correct password
 
 development:
   <<: *default
-  database: <%= ENV['DATABASE_NAME'] %>
-  password: <%= ENV['DATABASE_PASSWORD'] %>
+  database: <%= ENV.fetch("DATABASE_NAME", 'your_development_database_name') %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", 'your_default_password') %>
 
-  # The specified database role being used to connect to postgres.
+  # The specified database role being used to connect to postgres. Ensure the user has proper permissions.
   # To create additional roles in postgres see `$ createuser --help`.
   # When left blank, postgres will use the default role. This is
   # the same name as the operating system user that initialized the database.
@@ -61,8 +61,8 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME") { "base_source_test" } %>
-  password: <%= ENV.fetch("BASE_SOURCE_PASSWORD") { "postgres" } %>
+  database: <%= ENV.fetch("DATABASE_NAME", "base_source_test") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", 'your_default_test_password') %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -85,12 +85,12 @@ test:
 #
 production:
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME") { "base_source_production" } %>
-  username: <%= ENV.fetch("BASE_SOURCE_USERNAME") { "base_source" } %>
-  password: <%= ENV["BASE_SOURCE_PASSWORD"] %>
+  database: <%= ENV.fetch("DATABASE_NAME", "your_production_database_name") %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", 'your_production_username') %>
+  password: <%= ENV['DATABASE_PASSWORD'] %>
 
 staging:
   <<: *default
-  database: <%= ENV.fetch("DATABASE_NAME") { "base_source_staging" } %>
-  username: <%= ENV.fetch("BASE_SOURCE_USERNAME") { "base_source" } %>
-  password: <%= ENV["BASE_SOURCE_PASSWORD"] %>
+  database: <%= ENV.fetch("DATABASE_NAME", "base_source_staging") %>
+  username: <%= ENV.fetch("DATABASE_USERNAME", "your_staging_username") %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD", "your_staging_password") %>
